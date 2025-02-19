@@ -1,0 +1,45 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <pthread.h>
+#include <unistd.h>
+
+pthread_mutex_t mutex; // Mutex lock
+int shared_resource = 0; // Shared variable
+
+void *process(void *arg) {
+    pthread_mutex_lock(&mutex); // Lock the critical section
+
+    int thread_id = *(int *)arg;
+    printf("Thread %d entered critical section.\n", thread_id);
+    
+    // Simulate resource modification
+    shared_resource++;
+    printf("Thread %d modified shared resource. Value: %d\n", thread_id, shared_resource);
+
+    sleep(1); // Simulate some processing time
+    printf("Thread %d exiting critical section.\n", thread_id);
+
+    pthread_mutex_unlock(&mutex); // Unlock the critical section
+
+    return NULL;
+}
+
+int main() {
+    pthread_t threads[3];
+    int thread_ids[3] = {1, 2, 3};
+
+    pthread_mutex_init(&mutex, NULL); // Initialize mutex
+
+    // Creating threads
+    for (int i = 0; i < 3; i++)
+        pthread_create(&threads[i], NULL, process, &thread_ids[i]);
+
+    // Waiting for threads to complete
+    for (int i = 0; i < 3; i++)
+        pthread_join(threads[i], NULL);
+
+    pthread_mutex_destroy(&mutex); // Destroy mutex
+
+    printf("Final value of shared resource: %d\n", shared_resource);
+    return 0;
+}
